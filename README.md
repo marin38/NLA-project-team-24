@@ -28,7 +28,7 @@ It will download all required labraries and compile the project.
 
 5. You can use deploy.sh to compile and run the project. There is a template of Spark application (it just prints "Hello, world!"), see src/scala/template/YorClassName.scala
 
-Just print 
+Check, that deploy.sh is executable and just print 
 
 deploy.sh template.YourClassName 
 
