@@ -18,24 +18,25 @@ Please, don't write your code on cluster, as it can be suddenly overwritten by s
 
 1. Put your code to src/scala (use appropriate packages)
 
-2. Make sure, that all external library dependencies are included to simple.sbt
+2. Make sure, that all external library dependencies are included to ***simple.sbt***
 
 3. In the root directory of the project run 
 **sbt package**
-It will download all required labraries and compile the project.
 
-4. It target/scala-2.11.7 you will get jar file, which you have to copy to the cluster and use in spark-submit
+It will download all required libraries and compile the project.
 
-5. You can use deploy.sh to compile and run the project. There is a template of Spark application (it just prints "Hello, world!"), see src/scala/template/YorClassName.scala
+4. In ***target/scala-2.11.7*** you will get jar file, which you have to copy to the cluster and use in spark-submit
 
-Check, that deploy.sh is executable and just print 
+5. You can use deploy.sh to compile and run the project. There is a template of Spark application (it just prints "Hello, world!"), see ***src/scala/template/YorClassName.scala***
 
-deploy.sh template.YourClassName 
+Check, that ***deploy.sh*** is executable and just print 
+
+**deploy.sh template.YourClassName**
 
 to compile, copy jar to cluster and run it.
 
 **Note** If you are tired of entering passwords, type the following:
-ssh-keygen
+**ssh-keygen**
 
 This will create file "id_rsa.pub" in your ~/.ssh folder. Append it's content to /home/team24/.ssh/authorized_hosts on cluster.
 
