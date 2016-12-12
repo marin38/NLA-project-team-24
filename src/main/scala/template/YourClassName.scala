@@ -1,18 +1,17 @@
 package template
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
 
-object YourClassName 
-{
-  def main(args: Array[String]) 
-  {
-    val spark = SparkSession
-      .builder
-      .appName("Spark Template: hello world")
-      .getOrCreate()
+object YourClassName {
+  def main(args: Array[String]) {
+    val conf = new SparkConf().setAppName("Spark Template")
+    val sc = new SparkContext(conf)
 
+    //Place your code here
     println("Hello, world!")
 
-    spark.stop()
+    sc.stop()
   }
 }

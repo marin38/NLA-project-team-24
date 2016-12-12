@@ -9,10 +9,10 @@ Spark tutorial knowledge:
 - Spark web UI: https://www.mapr.com/blog/getting-started-spark-web-ui
 - Spark programming guide: http://spark.apache.org/docs/latest/programming-guide.html
 
-### Compiling project
+### Compiling and running project
 
 **Important!**
-Please, don't write your code on cluster, as it can be suddenly overwritten by somebody else. Maybe, it's a good way to debug locally, then commit, push, pull (on cluster) and test.
+Please, don't write your code on cluster, as it can be suddenly overwritten by somebody else. Moreover, there is some unfixed problem with sbt on cluster. Futhermore, it takes a lot of resources to compile code on cluster. So, **please compile the project locally!**
 
 -----
 
@@ -24,13 +24,18 @@ Please, don't write your code on cluster, as it can be suddenly overwritten by s
 **sbt package**
 It will download all required labraries and compile the project.
 
-4. It target/scala-2.11.7 you will get jar file, which must be used in spark-submit
+4. It target/scala-2.11.7 you will get jar file, which you have to copy to the cluster and use in spark-submit
 
-### Running project
-As the project was compiled, you can use **spark-submit** to run it
+5. You can use deploy.sh to compile and run the project. There is a template of Spark application (it just prints "Hello, world!"), see src/scala/template/YorClassName.scala
 
-Here is how to run template (it just prints "Hello, world!"), see src/scala/template/YorClassName.scala
+Just print 
 
-You should provide the class, which will be main, where SparkSession is created.
+deploy.sh template.YourClassName 
 
-**spark-submit --class YourClassName --master yarn --deploy-mode cluster target/scala-2.11.7/nla-project_2.11.7-1.0.jar
+to compile, copy jar to cluster and run it.
+
+**Note** If you are tired of entering passwords, type the following:
+ssh-keygen
+
+This will create file "id_rsa.pub" in your ~/.ssh folder. Append it's content to /home/team24/.ssh/authorized_hosts on cluster.
+
