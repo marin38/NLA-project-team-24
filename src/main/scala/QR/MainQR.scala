@@ -54,6 +54,20 @@ object MainQR
     matrixToDistributed(concatRowMatrix(A1, A2).tallSkinnyQR(false).R, sc)
   }
 
+  private def matrixToDistributed(matrix: Matrix, sc: SparkContext): RowMatrix = {
+    new RowMatrix(sc.parallelize(matrix.rowIter.toSeq))
+  }
 
+  private def concatRowMatrix(A1: RowMatrix, A2: RowMatrix): RowMatrix = {
+    new RowMatrix(A1.rows.union(A2.rows))
+  }
+
+  private def partitioning(matrix: RowMatrix, numPartition: Long): RDD[(Long, (Long, Vector))] = {
+    matrix.rows.zipWithIndex.map(row => (row._2.toLong / numPartition, (row._2, row._1)))
+  }
+
+  private def blockPartitioning(block: RDD[(Long, Vector)], numPartition: Long): RDD[(Long, (Long, Vector))] = {
+    block.map(row => (row._1 / numPartition, (row._1, row._2)))
+  }
 
 }
