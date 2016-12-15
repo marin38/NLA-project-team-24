@@ -38,25 +38,21 @@ object MainQR {
     val numPartition = 10L
 
     //get rdd with big block numbers
-    val matrixWithBlock = partitioning(matrix, numPartition = batchSize)
-    println("lol")
-    matrixWithBlock.collect.foreach(println)
-    //val blockMatrix = matrixWithBlock.groupByKey().map(_._2)
+    val matrixWithBlock = partitioning(matrix, batchSize = batchSize)
 
     //convert rdd to Iterable[RDD], each element of this Iterable is big block
     val blockMatrix = groupByKeyToRDDs(matrixWithBlock).values
 
     println("block matrix")
-    blockMatrix.foreach(x => x.collect.foreach(println))
+    //blockMatrix.foreach(x => x.collect.foreach(println))
 
-    //val reducedMatrix = blockProcess(blockMatrix, numPartition = numPartition, sc)
 
     //split each big block into small blocks and reduce it with spark's QR
     val reducedMatrix = blockMatrix.map(block => blockProcess(block, numPartition, sc))
 
-    //reducedMatrix.rows.collect().foreach(println)
-    reducedMatrix.foreach(x => x.rows.collect.foreach(println))
-
+    //reduce reduced matrix
+    val secondaryReducedMatrix = reducedMatrix.reduce(qrTotalReduce(sc))
+    secondaryReducedMatrix.rows.collect.foreach(println)
     sc.stop()
   }
 
@@ -65,14 +61,6 @@ object MainQR {
     val splittedMatrix = groupByKeyToRDDs(blockPartitioning(block, numPartition)).values.map(x => x.map(y => y._2)).map(x => new RowMatrix(x))
     splittedMatrix.reduce(qrTotalReduce(sc))
   }
-
-  /*
-  private def blockProcess(block: RDD[Iterable[(Long, Vector)]], numPartition: Long, sc: SparkContext): RowMatrix = {
-    val matrix = block.flatMap(identity)
-    val splittedMatrix = blockPartitioning(matrix, numPartition).groupByKey().map(x => processGroup(x._2, sc))
-    splittedMatrix.reduce(qrTotalReduce(sc))
-  }
-  */
 
   //scala magic for converting RDD to Iterable[RDD]
   private def groupByKeyToRDDs[K, V](pairRDD: RDD[(K, V)]) (implicit kt: ClassTag[K],
@@ -85,11 +73,6 @@ object MainQR {
 
   //Spark can't serialize spark context, but it required for converted Matrix to RowMatrix
   private def qrTotalReduce: (SparkContext => ((RowMatrix, RowMatrix) => RowMatrix)) = sc => (A1, A2) => qrReduce(A1, A2, sc)
-
-  //out of date
-  private def processGroup(group: Iterable[(Long, Vector)], sc: SparkContext): RowMatrix = {
-    new RowMatrix(sc.parallelize(group.map(_._2).toSeq))
-  }
 
   private def qrReduce(A1: RowMatrix, A2: RowMatrix, sc: SparkContext): RowMatrix = {
     /*
@@ -106,15 +89,15 @@ object MainQR {
     new RowMatrix(A1.rows.union(A2.rows))
   }
 
-  private def partitioning(matrix: RowMatrix, numPartition: Long): RDD[(Long, (Long, Vector))] = {
+  private def partitioning(matrix: RowMatrix, batchSize: Long): RDD[(Long, (Long, Vector))] = {
     /*
     This function for splitting input matrix into big blocks.
     First Long of output is big block number
      */
-    matrix.rows.zipWithIndex.map(row => (row._2.toLong / numPartition, (row._2, row._1)))
+    matrix.rows.zipWithIndex.map(row => (row._2.toLong / batchSize, (row._2, row._1)))
   }
 
-  //out of date
+  //split each big block into small blocks
   private def blockPartitioning(block: RDD[(Long, Vector)], batchSize: Long): RDD[(Long, (Long, Vector))] = {
     block.map(row => (row._1 / batchSize, (row._1, row._2)))
   }
