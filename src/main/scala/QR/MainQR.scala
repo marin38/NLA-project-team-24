@@ -7,6 +7,9 @@ import org.apache.spark.mllib.linalg.distributed.{IndexedRow, IndexedRowMatrix, 
 import org.apache.spark.rdd.RDD
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
+import org.joda.time._
+
+
 
 
 import scala.reflect.ClassTag
@@ -16,20 +19,22 @@ object MainQR {
     Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
 
-    val conf = new SparkConf().setAppName("Spark Template").setMaster("local[4]")
+    val conf = new SparkConf().setAppName("Spark Template")
     val sc = new SparkContext(conf)
 
     //standalone
     //val pathToData = "/home/anton/projects/skoltech/2/NLA/nla2016/project/data/matrix.txt"
 
-    val pathToData = "data/matrix.txt"
-    //val pathToData = "hdfs://10.0.0.26//user/team24/matrix.txt"
+    //val pathToData = "data/matrix1.txt"
+    val pathToData = "wasb://nlask24container@nlask24storage.blob.core.windows.net//user/team24/matrix1.txt"
 
     val data = sc.textFile(pathToData)
     val matrix = new RowMatrix(data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))))
 
     val ncols = matrix.numCols()
     val nrows = matrix.numRows()
+    println("starting partitioning")
+    println(DateTime.now)
 
     //size of big block
     //workersNumber = rowNumber / batchsize
@@ -39,6 +44,9 @@ object MainQR {
 
     //get rdd with big block numbers
     val matrixWithBlock = partitioning(matrix, batchSize = batchSize)
+
+    println("starting evalution")
+    println(DateTime.now)
 
     //convert rdd to Iterable[RDD], each element of this Iterable is big block
     val blockMatrix = groupByKeyToRDDs(matrixWithBlock).values
@@ -53,6 +61,10 @@ object MainQR {
     //reduce reduced matrix
     val secondaryReducedMatrix = reducedMatrix.reduce(qrTotalReduce(sc))
     secondaryReducedMatrix.rows.collect.foreach(println)
+
+    println("stopping")
+    println(DateTime.now)
+
     sc.stop()
   }
 

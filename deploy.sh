@@ -1,4 +1,4 @@
-cluster_hostname=team24@nla24project1-ssh.azurehdinsight.net
+cluster_hostname=team24@nlask24-ssh.azurehdinsight.net
 
 if [ ! $# == 1 ]
 then
